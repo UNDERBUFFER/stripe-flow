@@ -4,7 +4,7 @@ from rishat.views import response200
 
 
 urlpatterns = [
-    path('success', response200),
+    path('success/', response200),
     path('admin/', admin.site.urls),
     path('', include('sale.urls')),
 ]
