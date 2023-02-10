@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  app:
+    image: "rishat_test_task"
+    volumes:
+      - ./rishat:/app:Z
+      - ./.env:/app/.env:Z
+    depends_on:
+      - db
+    ports:
+      - 7070:7070
+    command: python manage.py runserver 0.0.0.0:7070
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: toor
+      POSTGRES_USER: postgres
+      POSTGRES_DB: rishat
