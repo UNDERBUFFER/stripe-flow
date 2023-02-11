@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Buy {{ object.name }}</title>
@@ -7,22 +8,19 @@
     <p>{{ object.description }}</p>
     <p>{{ object.price }}</p>
     <button id="buy-button">Buy</button>
-
-    <script src="https://js.stripe.com/v3/"></script>
     <script type="text/javascript">
-      const stripe = Stripe(
-        'pk_test_51MZfvcLoL2aWFKktxW4zDaHI0WdPGdUtiOGbxG4ygIHHXXQLSfcIA83PvMK7vzfLu3HGceIR5VBb2Z2LP4O0xlyp00IxFJmtof',
-      )
       const buyButton = document.getElementById('buy-button')
       buyButton.addEventListener('click', () => {
-        fetch('/buy/{{ object.id }}', { method: 'GET' })
+        fetch('http://localhost:7070/cart/', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: +'{{ object.id }}' }),
+        })
           .then((response) => response.json())
-          .then((data) => {
-            if (data.status !== 'ok') {
-              return
-            }
-            stripe.redirectToCheckout({ sessionId: data.id })
-          })
+          .then((data) => console.log(data))
       })
     </script>
   </body>
