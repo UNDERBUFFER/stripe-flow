@@ -7,20 +7,22 @@
     <title>Pay order</title>
   </head>
   <body>
-    <ul>
-      {% for object in item_list %}
-      <li>{{ object.name }} ({{ object.price }})</li>
-      {% endfor %}
-    </ul>
+    {% if item_list %} {% for object in item_list %}
+    <div>{{ object.name }} ({{ object.price }})</div>
+    {% endfor %}
     <button id="buy-button">Buy</button>
+    {% else %}
+    <div>Empty cart</div>
+    {% endif %}
+
     <script src="https://js.stripe.com/v3/"></script>
     <script type="text/javascript">
       const stripe = Stripe(
         'pk_test_51MZfvcLoL2aWFKktxW4zDaHI0WdPGdUtiOGbxG4ygIHHXXQLSfcIA83PvMK7vzfLu3HGceIR5VBb2Z2LP4O0xlyp00IxFJmtof',
       )
       const buyButton = document.getElementById('buy-button')
-      buyButton.addEventListener('click', () => {
-        fetch('/cart/buy/', { method: 'POST' })
+      buyButton && buyButton.addEventListener('click', () => {
+        fetch("{% url 'cart-buy' %}", { method: 'POST' })
           .then((response) => response.json())
           .then((data) => {
             if (data.status !== 'ok') {

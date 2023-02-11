@@ -11,42 +11,32 @@ from django.views.generic.list import ListView
 
 from rishat.env import ENV
 from sale.models import Item, Order, OrderItem
+from sale.utils import set_session_order, close_session_order
 
 
 class ItemDetailView(DetailView):
     model = Item
 
 
-class OrderView(ListView):
+class ItemListView(ListView):
+    order: Order
     model = Item
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.order = None
-
-    @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        self.order = None
-
-        oid = request.session.get('oid', None)
-        if oid is None:
-            self.order = Order.objects.create()
-            request.session['oid'] = self.order.pk
-        else:
-            self.order = Order.objects.get(id=oid)
+        self.order = set_session_order(request)
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return self.order.items.all() # type: ignore
+        return self.order.items.all()
 
-    # def get(self, request, *args, **kwargs):
-    #     items = [
-    #         model_to_dict(i) for i in self.order.items.all()  # type: ignore
-    #     ]
-    #     return JsonResponse({
-    #         'id': self.order.pk,  # type: ignore
-    #         'data': json.dumps(items)
-    #     })
+
+class AddOrderItemAPIView(BaseView):
+    order: Order
+
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        self.order = set_session_order(request)
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         json_data = json.loads(request.body)
@@ -66,33 +56,24 @@ class OrderView(ListView):
                 },
                 status=403)
 
-        OrderItem.objects.create(order=self.order, item=item)  # type: ignore
+        OrderItem.objects.create(order=self.order, item=item)
         return JsonResponse({
             'status': 'ok',
-            'id': self.order.pk,  # type: ignore
+            'id': self.order.pk,
             'item_id': item.pk,
         })
 
 
-class BuyOrderView(BaseView):
-    model = Item
+class CloseOrderAPIView(BaseView):
+    order: Order
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
+        self.order = set_session_order(request)
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        oid = request.session.get('oid', None)
-        if oid is None:
-            return JsonResponse(
-                {
-                    'status': 'error',
-                    'description': 'empty cart',
-                }, status=403)
-
-        order = Order.objects.get(id=oid)
-        items = order.items.all().exclude(api_price_id__isnull=True)
-
+        items = self.order.items.all().exclude(api_price_id__isnull=True)
         if items.count() == 0:
             return JsonResponse(
                 {
@@ -108,6 +89,8 @@ class BuyOrderView(BaseView):
             success_url=ENV['SUCCESS_PAYMENT_URL'],
             line_items=line_items,
             mode='payment').stripe_id
+
+        close_session_order(request, self.order)
 
         return JsonResponse({
             'status': 'ok',

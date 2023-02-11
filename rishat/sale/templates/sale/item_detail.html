@@ -11,7 +11,7 @@
     <script type="text/javascript">
       const buyButton = document.getElementById('buy-button')
       buyButton.addEventListener('click', () => {
-        fetch('http://localhost:7070/cart/', {
+        fetch("{% url 'cart-add' %}", {
           method: 'POST',
           headers: {
             Accept: 'application/json',
