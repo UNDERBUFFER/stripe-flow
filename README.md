@@ -29,5 +29,9 @@ API
 * POST `/cart/add/` - add element to order
 * POST `/cart/buy/` - call stripe
 
+Restore
+-------
+* `docker exec -i rishat_db_1 /bin/bash -c "PGPASSWORD=toor pg_dump --username postgres rishat" > ./dump.sql`
+
 
 
