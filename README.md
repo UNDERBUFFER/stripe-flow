@@ -15,7 +15,11 @@ Development
     * go to the `http://localhost:7070/admin/` and create Item objects with price ids from stripe dashboard
 * Else:
     * `docker exec stripeflow_db_1 psql -U postgres rishat < dump.sql`
+    docker exec -i stripeflow_db_1 /bin/bash -c "PGPASSWORD=toor psql --username postgres rishat" < ~/dump.sql
+
     * go to the `http://localhost:7070/admin/` and update Item objects with price ids from stripe dashboard
+
+* `ngrok http 7070 --log=stdout > ngrok.log &`
 
 URLS
 ----
