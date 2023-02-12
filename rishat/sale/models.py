@@ -5,7 +5,7 @@ class Item(models.Model):
     name = models.TextField(null=False, unique=True)
     description = models.TextField(null=False)
     price = models.IntegerField()
-    api_price_id = models.TextField(null=True, unique=True)
+    api_price_id = models.TextField(default=None,blank=True, null=True, unique=True)
 
 
 class Order(models.Model):
